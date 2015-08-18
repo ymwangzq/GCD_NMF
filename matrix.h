@@ -4,9 +4,11 @@
 #include <cblas.h>
 #include <math.h>
 #include <ppl.h>
-#include <numeric>
+#include "opencv2/core/core.hpp"
+#include "opencv2/highgui/highgui.hpp"
 
 using namespace std;
+using namespace cv;
 using namespace concurrency;
 
 typedef void(WINAPI* _cblas_dgemm)(OPENBLAS_CONST enum CBLAS_ORDER Order, OPENBLAS_CONST enum CBLAS_TRANSPOSE TransA, OPENBLAS_CONST enum CBLAS_TRANSPOSE TransB, OPENBLAS_CONST blasint M, OPENBLAS_CONST blasint N, OPENBLAS_CONST blasint K,
@@ -15,6 +17,9 @@ typedef void(WINAPI* _cblas_dgemm)(OPENBLAS_CONST enum CBLAS_ORDER Order, OPENBL
 class _Matrix
 {
 public:
+	int MatChannels;
+	int MatType;
+
 	_Matrix();
 	_Matrix(int _d1, int _d2, double* _buf);
 	_Matrix(const _Matrix& a);
@@ -32,7 +37,7 @@ public:
 
 	void resize(int _d1, int _d2);
 	void resize(int _d1, int _d2, double* _buf);
-	bool reshapeToColWithRowFirst(int d2);
+	bool reshapeToColWithRowFirst();
 
 	double getmax();
 	double getmin();
@@ -53,6 +58,9 @@ public:
 
 	void NMF(int rank, int iter, _Matrix& W, _Matrix& H);
 
+	void setavilable(bool _avilable);
+	bool isavilable();
+
 private:
 	static HMODULE _openBlas;
 	static _cblas_dgemm cblas_dgemm;
@@ -61,9 +69,10 @@ private:
 	int d2;
 	bool avilable;
 	double* buf;
-
-	void setavilable(bool _avilable);
-	bool isavilable();
 };
 
 void normalize_w(double* W, int d1, int d2);
+_Matrix mat2matrix(Mat M);
+Mat matrix2mat(_Matrix M);
+
+_Matrix getPicMat(LPCSTR path);

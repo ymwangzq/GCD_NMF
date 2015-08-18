@@ -1,14 +1,15 @@
 #include "matrix.h"
+#include <string>
 
 double goWiter(double *GW, double *HH, double *W, double tol, int n, int k, int maxinner);
 
 HMODULE _Matrix::_openBlas = LoadLibrary(TEXT("libopenblas.dll"));
 _cblas_dgemm _Matrix::cblas_dgemm = (_cblas_dgemm)GetProcAddress(_Matrix::_openBlas, TEXT("cblas_dgemm"));
 
-_Matrix::_Matrix():avilable(false), d1(0), d2(0){}
+_Matrix::_Matrix():avilable(false), d1(0), d2(0), MatChannels(0){}
 
 _Matrix::_Matrix(int _d1, int _d2, double* _buf)
-	: d1(_d1), d2(_d2), avilable(false)
+	: d1(_d1), d2(_d2), avilable(false), MatChannels(0)
 {
 	buf = NULL;
 	buf = new double[d1*d2];
@@ -22,6 +23,8 @@ _Matrix::_Matrix(int _d1, int _d2, double* _buf)
 
 _Matrix::_Matrix(const _Matrix& a)
 {
+	MatChannels = a.MatChannels;
+	MatType = a.MatType;
 	d1 = a.d1, d2 = a.d2;
 	avilable = a.avilable;
 	buf = NULL;
@@ -37,6 +40,8 @@ _Matrix::_Matrix(const _Matrix& a)
 
 _Matrix& _Matrix::operator=(const _Matrix& a)
 {
+	MatChannels = a.MatChannels;
+	MatType = a.MatType;
 	d1 = a.d1, d2 = a.d2;
 	avilable = a.avilable;
 	if (buf != NULL)
@@ -119,18 +124,16 @@ void _Matrix::resize(int _d1, int _d2, double* _buf)
 		avilable = true;
 }
 
-bool _Matrix::reshapeToColWithRowFirst(int _d2)
+bool _Matrix::reshapeToColWithRowFirst()
 {
 	bool ret = false;
 	if (!avilable)
 	{
-		cout << "Err in operator*:matrix not avilable!" << endl;
+		cout << "Err in reshapeToColWithRowFirst:matrix not avilable!" << endl;
 		return ret;
 	}
-	if (_d2 != d1 * d2)
-		return ret;
 	d1 = 1;
-	d2 = _d2;
+	d2 = d1 * d2;
 	ret = true;
 	return ret;
 }
@@ -617,5 +620,107 @@ double goWiter(
 		if (local > ret)
 			ret = local;
 	});
+	return ret;
+}
+
+_Matrix mat2matrix(Mat M)
+{
+	_Matrix ret;
+	ret.MatChannels = M.channels();
+	ret.MatType = M.type();
+	ret.resize(M.rows, M.cols * M.channels());
+	double* retbuf = ret.getbuf2set();
+
+	if (M.isContinuous())
+	{
+		parallel_for((int)0, ret.getd2() * ret.getd1(), [&](int i)
+		{
+			retbuf[i] = (double)M.data[i];
+		});
+		ret.setavilable(true);
+	}
+	else
+	{
+		int i = 0;
+		for_each(M.begin<Vec3b>(), M.end<Vec3b>(), [&](Vec3b it)
+		{
+			retbuf[i] = it[0];
+			retbuf[i + 1] = it[1];
+			retbuf[i + 2] = it[2];
+		});
+	}
+
+	return ret;
+}
+
+Mat matrix2mat(_Matrix M)
+{
+	Size s = { M.getd2() / M.MatChannels, M.getd1() };
+	Mat ret(s, M.MatType);
+	if (!M.isavilable())
+	{
+		ret.release();
+		return ret;
+	}
+	const double* buf = M.getbuf();
+
+	int d1 = 0, d2 = 0;
+	const double* mbuf = M.getbuf();
+	/*
+	for_each(ret.begin<Vec3b>(), ret.end<Vec3b>(), [&](Vec3b it)
+	{
+		double v1 = mbuf[d1 * M.getd2() + d2 * M.MatChannels];
+		double v2 = mbuf[d1 * M.getd2() + d2 * M.MatChannels + 1];
+		double v3 = mbuf[d1 * M.getd2() + d2 * M.MatChannels + 2];
+		it = Vec3b{ (uchar)v1, (uchar)v2, (uchar)v3 };
+	});
+	*/
+	if (ret.isContinuous())
+	{
+		parallel_for((int)0, M.getd2() * M.getd1(), [&](int i)
+		{
+			ret.data[i] = (uchar)mbuf[i];
+		});
+	}
+	else
+	{
+
+	}
+
+	return ret;
+}
+
+_Matrix getPicMat(LPCSTR path)
+{
+	_Matrix ret;
+
+	WIN32_FIND_DATA FindFileData;
+	HANDLE hFind;
+	hFind = FindFirstFile(path, &FindFileData);
+	Mat tmpM;
+	_Matrix tmp_M;
+	while (hFind != INVALID_HANDLE_VALUE)
+	{
+		if (!((FindFileData.cFileName[0] == '.' && FindFileData.cFileName[1] == 0) || \
+			(FindFileData.cFileName[0] == '.' && FindFileData.cFileName[1] == '.' && FindFileData.cFileName[2] == 0)))
+		{
+			cout << FindFileData.cFileName << endl;
+			string picfmane = FindFileData.cFileName;
+			tmpM = imread(picfmane, 1);
+			namedWindow("test", CV_WINDOW_NORMAL);
+			imshow("test", tmpM);
+			waitKey();
+			destroyWindow("test");
+			tmp_M = mat2matrix(tmpM);
+			tmp_M.reshapeToColWithRowFirst();
+			ret.cat(tmp_M, 1);
+		}
+		if (!FindNextFile(hFind, &FindFileData))
+		{
+			FindClose(hFind);
+			hFind = INVALID_HANDLE_VALUE;
+		}
+	}
+
 	return ret;
 }

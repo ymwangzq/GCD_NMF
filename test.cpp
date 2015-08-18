@@ -1,10 +1,6 @@
 #include <iostream>
 #include <Windows.h>
 #include <cblas.h>
-#include <fstream>
-#include "opencv2/core/core.hpp"
-#include "opencv2/highgui/highgui.hpp"
-#include <stdio.h>
 #include "matrix.h"
 
 using namespace std;
@@ -147,7 +143,6 @@ int main()
 	imshow("test", imgtmp);
 	waitKey();
 	destroyWindow("test");
-
 	uchar* p = imgtmp.data;
 	cout << imgtmp.total()*imgtmp.channels() << endl;
 	if (imgtmp.isContinuous())
@@ -157,6 +152,10 @@ int main()
 	MatIterator_<Vec3b> it, begin, end;
 	begin = imgtmp.begin<Vec3b>();
 	end = imgtmp.end<Vec3b>();
+	int row = imgtmp.rows;
+	cout << row << endl;
+	int col = imgtmp.cols;
+	cout << col << endl;
 	/*
 	for (int i = 0; i < imgtmp.total()*imgtmp.channels(); i += imgtmp.channels())
 	{
@@ -186,6 +185,64 @@ int main()
 			hFind = INVALID_HANDLE_VALUE;
 		}
 	}
+	/*
+	for (it = begin; it < end; it++)
+	{
+		cout << (int)it[0][0] << "\t" << (int)it[0][1] << "\t" << (int)it[0][2] << endl;
+		char s = getchar();
+		if (s == '0')
+			break;
+	}
+	*/
+	DWORD start = GetTickCount();
+	_Matrix tmp = mat2matrix(imgtmp);
+	DWORD time = GetTickCount() - start;
+	cout << (int)time << endl;
+	/*
+	for (int i = 0; i < 9; i++)
+	{
+		if (i % 3 == 0)
+			cout << endl;
+		cout << (int)tmp.getbuf()[i] << "\t";
+	}
+	*/
+	start = GetTickCount();
+	imgtmp = matrix2mat(tmp);
+	time = GetTickCount() - start;
+	cout << (int)time << endl;
+	namedWindow("test", CV_WINDOW_NORMAL);
+	imshow("test", imgtmp);
+	waitKey();
+	destroyWindow("test");
+	begin = imgtmp.begin<Vec3b>();
+	end = imgtmp.end<Vec3b>();
+	/*
+	for (it = begin; it < end; it++)
+	{
+		cout << (int)it[0][0] << "\t" << (int)it[0][1] << "\t" << (int)it[0][2] << endl;
+		char s = getchar();
+		if (s == '0')
+			break;
+	}
+	*/
+	int i = 260;
+	Size s = { i, 2*i };
+	cout << imgtmp.size() << endl;
+	cout << imgtmp.type() << endl;
+
+	imgtmp = imread("3.bmp", 0);
+	cout << imgtmp.channels() << endl;
+	namedWindow("test", CV_WINDOW_NORMAL);
+	imshow("test", imgtmp);
+	waitKey();
+	destroyWindow("test");
+	start = GetTickCount();
+	tmp = mat2matrix(imgtmp);
+	time = GetTickCount() - start;
+	cout << (int)time << endl;
+
+	char path[] = { "C:\\test\\*" };
+	_Matrix test = getPicMat(path);
 
 	getchar();
 	return 0;
