@@ -699,18 +699,22 @@ _Matrix getPicMat(LPCSTR path)
 	hFind = FindFirstFile(path, &FindFileData);
 	Mat tmpM;
 	_Matrix tmp_M;
+	string dir = path;
+	dir.erase(dir.end() - 1);
 	while (hFind != INVALID_HANDLE_VALUE)
 	{
 		if (!((FindFileData.cFileName[0] == '.' && FindFileData.cFileName[1] == 0) || \
 			(FindFileData.cFileName[0] == '.' && FindFileData.cFileName[1] == '.' && FindFileData.cFileName[2] == 0)))
 		{
-			cout << FindFileData.cFileName << endl;
+			//cout << FindFileData.cFileName << endl;
 			string picfmane = FindFileData.cFileName;
+			picfmane = dir + picfmane;
+			cout << picfmane << endl;
 			tmpM = imread(picfmane, 1);
-			namedWindow("test", CV_WINDOW_NORMAL);
-			imshow("test", tmpM);
-			waitKey();
-			destroyWindow("test");
+			//namedWindow("test", CV_WINDOW_NORMAL);
+			//imshow("test", tmpM);
+			//waitKey();
+			//destroyWindow("test");
 			tmp_M = mat2matrix(tmpM);
 			tmp_M.reshapeToColWithRowFirst();
 			ret.cat(tmp_M, 1);

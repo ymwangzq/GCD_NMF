@@ -138,7 +138,8 @@ int main()
 	cout << "ERRmax = " << Err.getmax() << endl;
 	cout << "ERRmin = " << Err.getmin() << endl;
 
-	Mat imgtmp = imread("1.JPG", 1);
+	string jpg1 = { "1.jpg" };
+	Mat imgtmp = imread(jpg1, 1);
 	namedWindow("test", CV_WINDOW_NORMAL);
 	imshow("test", imgtmp);
 	waitKey();
@@ -244,6 +245,7 @@ int main()
 	char path[] = { "C:\\test\\*" };
 	_Matrix test = getPicMat(path);
 
+	cout << "ready" << endl;
 	getchar();
 	return 0;
 }
