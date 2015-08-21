@@ -38,6 +38,7 @@ public:
 	void resize(int _d1, int _d2);
 	void resize(int _d1, int _d2, double* _buf);
 	bool reshapeToColWithRowFirst();
+	bool reshape(int _d1, int _d2);
 
 	double getmax();
 	double getmin();
@@ -75,4 +76,7 @@ void normalize_w(double* W, int d1, int d2);
 _Matrix mat2matrix(Mat M);
 Mat matrix2mat(_Matrix M);
 
-_Matrix getPicMat(LPCSTR path);
+_Matrix getPicMat(LPCSTR path, Size& size);
+
+void matrix2file(LPCSTR filename, _Matrix M);
+void file2matrix(LPCSTR filename, _Matrix& M);

@@ -1,15 +1,31 @@
 #include <iostream>
 #include <Windows.h>
 #include <cblas.h>
+#include <fstream>
+#include <stdio.h>
 #include "matrix.h"
 
 using namespace std;
 using namespace cv;
 
-typedef void(WINAPI* _cblas_dgemm)(OPENBLAS_CONST enum CBLAS_ORDER Order, OPENBLAS_CONST enum CBLAS_TRANSPOSE TransA, OPENBLAS_CONST enum CBLAS_TRANSPOSE TransB, OPENBLAS_CONST blasint M, OPENBLAS_CONST blasint N, OPENBLAS_CONST blasint K,
-	OPENBLAS_CONST double alpha, OPENBLAS_CONST double *A, OPENBLAS_CONST blasint lda, OPENBLAS_CONST double *B, OPENBLAS_CONST blasint ldb, OPENBLAS_CONST double beta, double *C, OPENBLAS_CONST blasint ldc);
+void test1();
+void test2();
+void test3();
+void test4();
 
 int main()
+{
+	test1();
+	test2();
+	test3();
+	test4();
+
+	cout << "ready" << endl;
+	getchar();
+	return 0;
+}
+
+void test1()
 {
 	HMODULE _cblas = NULL;
 	_cblas = LoadLibrary(TEXT("libopenblas.dll"));
@@ -65,18 +81,18 @@ int main()
 
 	/*
 	cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, mA.getd1(), mB.getd2(), mA.getd2(),\
-		1, mA.getbuf(), mA.getd2(), mB.getbuf(), mB.getd2(), 0, C, n);
+	1, mA.getbuf(), mA.getd2(), mB.getbuf(), mB.getd2(), 0, C, n);
 
 	const float* tmp = mA.getbuf();
 	tmp++;
 	//tmp[0] = 0;
 	*/
-	
+
 	_Matrix mC;
 	mC = mA*mB;
 	cout << "mC" << endl;
 	mC.show();
-	_Matrix mD = mA*(double)4.157+mA;
+	_Matrix mD = mA*(double)4.157 + mA;
 	cout << "mD" << endl;
 	mD.show();
 	mD = mD.dotDivision(mA);
@@ -117,7 +133,7 @@ int main()
 
 	mD = mC.getCol(0);
 	cout << "mD" << endl;
-	mD.cat(mD,0).show();
+	mD.cat(mD, 0).show();
 	mD.show();
 	mD.cat(mD, 1).show();
 	mD.show();
@@ -142,7 +158,7 @@ int main()
 	Mat imgtmp = imread(jpg1, 1);
 	namedWindow("test", CV_WINDOW_NORMAL);
 	imshow("test", imgtmp);
-	waitKey();
+	//waitKey();
 	destroyWindow("test");
 	uchar* p = imgtmp.data;
 	cout << imgtmp.total()*imgtmp.channels() << endl;
@@ -160,13 +176,13 @@ int main()
 	/*
 	for (int i = 0; i < imgtmp.total()*imgtmp.channels(); i += imgtmp.channels())
 	{
-		cout << (int)p[i] << "\t" << (int)p[i + 1] << "\t" << (int)p[i + 2] << endl;
-		getchar();
+	cout << (int)p[i] << "\t" << (int)p[i + 1] << "\t" << (int)p[i + 2] << endl;
+	getchar();
 	}
 	for (it = begin; it < end; it++)
 	{
-		cout << (int)it[0][0] << "\t" << (int)it[0][1] << "\t" << (int)it[0][2] << endl;
-		getchar();
+	cout << (int)it[0][0] << "\t" << (int)it[0][1] << "\t" << (int)it[0][2] << endl;
+	getchar();
 	}
 	*/
 	WIN32_FIND_DATA FindFileData;
@@ -189,10 +205,10 @@ int main()
 	/*
 	for (it = begin; it < end; it++)
 	{
-		cout << (int)it[0][0] << "\t" << (int)it[0][1] << "\t" << (int)it[0][2] << endl;
-		char s = getchar();
-		if (s == '0')
-			break;
+	cout << (int)it[0][0] << "\t" << (int)it[0][1] << "\t" << (int)it[0][2] << endl;
+	char s = getchar();
+	if (s == '0')
+	break;
 	}
 	*/
 	DWORD start = GetTickCount();
@@ -202,32 +218,32 @@ int main()
 	/*
 	for (int i = 0; i < 9; i++)
 	{
-		if (i % 3 == 0)
-			cout << endl;
-		cout << (int)tmp.getbuf()[i] << "\t";
+	if (i % 3 == 0)
+	cout << endl;
+	cout << (int)tmp.getbuf()[i] << "\t";
 	}
 	*/
 	start = GetTickCount();
-	imgtmp = matrix2mat(tmp);
+	Mat _imgtmp = matrix2mat(tmp);
 	time = GetTickCount() - start;
 	cout << (int)time << endl;
 	namedWindow("test", CV_WINDOW_NORMAL);
-	imshow("test", imgtmp);
-	waitKey();
+	imshow("test", _imgtmp);
+	//waitKey();
 	destroyWindow("test");
 	begin = imgtmp.begin<Vec3b>();
 	end = imgtmp.end<Vec3b>();
 	/*
 	for (it = begin; it < end; it++)
 	{
-		cout << (int)it[0][0] << "\t" << (int)it[0][1] << "\t" << (int)it[0][2] << endl;
-		char s = getchar();
-		if (s == '0')
-			break;
+	cout << (int)it[0][0] << "\t" << (int)it[0][1] << "\t" << (int)it[0][2] << endl;
+	char s = getchar();
+	if (s == '0')
+	break;
 	}
 	*/
 	int i = 260;
-	Size s = { i, 2*i };
+	Size s = { i, 2 * i };
 	cout << imgtmp.size() << endl;
 	cout << imgtmp.type() << endl;
 
@@ -235,17 +251,83 @@ int main()
 	cout << imgtmp.channels() << endl;
 	namedWindow("test", CV_WINDOW_NORMAL);
 	imshow("test", imgtmp);
-	waitKey();
+	//waitKey();
 	destroyWindow("test");
 	start = GetTickCount();
 	tmp = mat2matrix(imgtmp);
 	time = GetTickCount() - start;
 	cout << (int)time << endl;
+}
 
+void test2()
+{
 	char path[] = { "C:\\test\\*" };
-	_Matrix test = getPicMat(path);
+	Size size;
+	_Matrix test = getPicMat(path, size);
+	_Matrix col = test.getCol(0);
+	col.reshape(size.height, size.width * col.MatChannels);
+	Mat tmp = matrix2mat(col);
+	namedWindow("test", CV_WINDOW_NORMAL);
+	imshow("test", tmp);
+	//waitKey();
+	destroyWindow("test");
+}
 
-	cout << "ready" << endl;
-	getchar();
-	return 0;
+void test3()
+{
+	char path[] = { "C:\\test\\*" };
+	Size size;
+	_Matrix test = getPicMat(path, size);
+	_Matrix W, H;
+	test.NMF(2, 1, W, H);
+	_Matrix R = W * H;
+	_Matrix Err = test - R;
+	cout << "ERRmax = " << Err.getmax() << endl;
+	cout << "ERRmin = " << Err.getmin() << endl;
+	/*
+	ofstream outfile("WH.nmf", ios::out | ios::binary);
+	outfile << size.height << endl << size.width << endl;
+	*/
+
+	matrix2file("W.nmf", W);
+	matrix2file("H.nmf", H);
+
+	_Matrix Wr, Hr;
+	file2matrix("W.nmf", Wr);
+	file2matrix("H.nmf", Hr);
+
+	_Matrix We, He;
+	We = W - Wr;
+	He = H - Hr;
+	cout << "WEmax = " << We.getmax() << endl;
+	cout << "WEmin = " << We.getmin() << endl;
+	cout << "HEmax = " << He.getmax() << endl;
+	cout << "HEmin = " << He.getmin() << endl;
+}
+
+void test4()
+{
+	string jpg1 = { "1.jpg" };
+	Mat imgtmp = imread(jpg1, 1);
+	namedWindow("test", CV_WINDOW_NORMAL);
+	imshow("test", imgtmp);
+	//waitKey();
+	destroyWindow("test");
+
+	_Matrix M = mat2matrix(imgtmp);
+	matrix2file("M.nmf", M);
+	_Matrix N;
+	file2matrix("M.nmf", N);
+
+	Mat img = matrix2mat(N);
+	namedWindow("test", CV_WINDOW_NORMAL);
+	imshow("test", imgtmp);
+	//waitKey();
+	destroyWindow("test");
+
+	_Matrix E = M - N;
+
+	cout << "DBL_MIN = " << DBL_MIN << endl;
+	cout << "Emax = " << E.getmax() << endl;
+	cout << "Emin = " << E.getmin() << endl;
 }

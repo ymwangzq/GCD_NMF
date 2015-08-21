@@ -132,8 +132,27 @@ bool _Matrix::reshapeToColWithRowFirst()
 		cout << "Err in reshapeToColWithRowFirst:matrix not avilable!" << endl;
 		return ret;
 	}
-	d1 = 1;
-	d2 = d1 * d2;
+	d1 = d1 * d2;
+	d2 = 1;
+	ret = true;
+	return ret;
+}
+
+bool _Matrix::reshape(int _d1, int _d2)
+{
+	bool ret = false;
+	if (!avilable)
+	{
+		cout << "Err in reshape:matrix not avilable!" << endl;
+		return ret;
+	}
+	if (_d1 * _d2 != d1 * d2)
+	{
+		cout << "Err in reshape:size not match!" << endl;
+		return ret;
+	}
+	d1 = _d1;
+	d2 = _d2;
 	ret = true;
 	return ret;
 }
@@ -183,13 +202,17 @@ double _Matrix::getmin()
 _Matrix _Matrix::getCol(int c2)
 {
 	_Matrix ret;
+	if (c2 >= d2)
+		return ret;
 	ret.resize(d1, 1);
 	double* newbuf = ret.getbuf2set();
 	for (int i = 0; i < d1; i++)
 	{
 		newbuf[i] = buf[i * d2 + c2];
 	}
+	ret.MatChannels = MatChannels;
 	ret.setavilable(true);
+	ret.MatType = MatType;
 	return ret;
 }
 
@@ -506,7 +529,6 @@ void _Matrix::NMF(int rank, int iter, _Matrix& W, _Matrix& H)
 
 	for (int i = 0; i < iter; i++)
 	{
-		cout << "\riter = " << i + 1 << "\t";
 		_Matrix VH = *this * H.transpose();
 		//VH.show();
 		_Matrix HH = H * H.transpose();
@@ -530,7 +552,7 @@ void _Matrix::NMF(int rank, int iter, _Matrix& W, _Matrix& H)
 		H = H.transpose();
 		GH = GH.transpose();
 		//H.show();
-		cout << "obj = " << obj;
+		cout << "\riter = " << i + 1 << "\t" << "obj = " << obj;
 	}
 	cout << endl;
 }
@@ -639,6 +661,7 @@ _Matrix mat2matrix(Mat M)
 		});
 		ret.setavilable(true);
 	}
+	/*
 	else
 	{
 		int i = 0;
@@ -649,12 +672,19 @@ _Matrix mat2matrix(Mat M)
 			retbuf[i + 2] = it[2];
 		});
 	}
+	*/
 
 	return ret;
 }
 
 Mat matrix2mat(_Matrix M)
 {
+	if (!M.isavilable())
+	{
+		Mat ret;
+		ret.release();
+		return ret;
+	}
 	Size s = { M.getd2() / M.MatChannels, M.getd1() };
 	Mat ret(s, M.MatType);
 	if (!M.isavilable())
@@ -662,11 +692,10 @@ Mat matrix2mat(_Matrix M)
 		ret.release();
 		return ret;
 	}
-	const double* buf = M.getbuf();
 
-	int d1 = 0, d2 = 0;
 	const double* mbuf = M.getbuf();
 	/*
+	int d1 = 0, d2 = 0;
 	for_each(ret.begin<Vec3b>(), ret.end<Vec3b>(), [&](Vec3b it)
 	{
 		double v1 = mbuf[d1 * M.getd2() + d2 * M.MatChannels];
@@ -684,13 +713,13 @@ Mat matrix2mat(_Matrix M)
 	}
 	else
 	{
-
+		cout << "Err in matrix2mat:ret not continuous" << endl;
 	}
 
 	return ret;
 }
 
-_Matrix getPicMat(LPCSTR path)
+_Matrix getPicMat(LPCSTR path, Size& _size)
 {
 	_Matrix ret;
 
@@ -701,6 +730,8 @@ _Matrix getPicMat(LPCSTR path)
 	_Matrix tmp_M;
 	string dir = path;
 	dir.erase(dir.end() - 1);
+	bool flag = false;
+	Size s;
 	while (hFind != INVALID_HANDLE_VALUE)
 	{
 		if (!((FindFileData.cFileName[0] == '.' && FindFileData.cFileName[1] == 0) || \
@@ -711,13 +742,34 @@ _Matrix getPicMat(LPCSTR path)
 			picfmane = dir + picfmane;
 			cout << picfmane << endl;
 			tmpM = imread(picfmane, 1);
+			/*
+			namedWindow("test", CV_WINDOW_NORMAL);
+			imshow("test", tmpM);
+			waitKey();
+			destroyWindow("test");
+			*/
+			Size tmps = tmpM.size();
+			if (flag == false)
+			{
+				s = tmps;
+				ret.resize(s.height * s.width * tmpM.channels(), 0);
+				flag = true;
+			}
+			else
+			{
+				if (s != tmps)
+				{
+					cout << "err in getPicMat:not all pics are same size!" << endl;
+					break;
+				}
+			}
 			//namedWindow("test", CV_WINDOW_NORMAL);
 			//imshow("test", tmpM);
 			//waitKey();
 			//destroyWindow("test");
 			tmp_M = mat2matrix(tmpM);
 			tmp_M.reshapeToColWithRowFirst();
-			ret.cat(tmp_M, 1);
+			ret = ret.cat(tmp_M, 1);
 		}
 		if (!FindNextFile(hFind, &FindFileData))
 		{
@@ -725,6 +777,46 @@ _Matrix getPicMat(LPCSTR path)
 			hFind = INVALID_HANDLE_VALUE;
 		}
 	}
-
+	_size = s;
+	ret.MatChannels = 3;
+	ret.MatType = tmpM.type();
+	ret.setavilable(true);
 	return ret;
+}
+
+void matrix2file(LPCSTR filename, _Matrix M)
+{
+	if (!M.isavilable())
+	{
+		cout << "Err in matrix2file;matrix not avilable!" << endl;
+		return;
+	}
+	FILE * fout;
+	fopen_s(&fout, filename, "wb");
+	if (fout == NULL)
+	{
+		cout << "Err in open matrix2file:fopen failed!" << endl;
+		return;
+	}
+	fprintf(fout, "%d,%d,%d,%d", M.getd1(), M.getd2(), M.MatChannels, M.MatType);
+	fwrite(M.getbuf(), sizeof(double), M.getd1() * M.getd2(), fout);
+	fclose(fout);
+}
+
+void file2matrix(LPCSTR filename, _Matrix& M)
+{
+	FILE * fin;
+	fopen_s(&fin, filename, "rb");
+	if (fin == NULL)
+	{
+		cout << "Err in open fin:fopen failed!" << endl;
+		return;
+	}
+	int m, n;
+	fscanf_s(fin, "%d,%d,%d,%d", &m, &n, &M.MatChannels, &M.MatType);
+	M.resize(m, n);
+	double* Mbuf = M.getbuf2set();
+	fread(Mbuf, sizeof(double), m * n, fin);
+	fclose(fin);
+	M.setavilable(true);
 }
