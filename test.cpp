@@ -279,7 +279,7 @@ void test3()
 	Size size;
 	_Matrix test = getPicMat(path, size);
 	_Matrix W, H;
-	test.NMF(2, 1, W, H);
+	test.NMF(2, 20, W, H);
 	_Matrix R = W * H;
 	_Matrix Err = test - R;
 	cout << "ERRmax = " << Err.getmax() << endl;

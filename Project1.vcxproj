@@ -73,12 +73,13 @@
     <IncludePath>C:\OpenBLAS-v0.2.14-Win64-int64\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\OpenBLAS-v0.2.14-Win64-int64\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\OpenBLAS-v0.2.14-Win64-int64\include;C:\tbb43_20150611oss\include;$(IncludePath)</IncludePath>
     <ExecutablePath>$(ExecutablePath)</ExecutablePath>
-    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\tbb43_20150611oss\build\vs2010\intel64\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>C:\OpenBLAS-v0.2.14-Win64-int64\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\OpenBLAS-v0.2.14-Win64-int64\include;C:\tbb43_20150611oss\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\tbb43_20150611oss\build\vs2010\intel64\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>C:\OpenBLAS-v0.2.14-Win64-int64\include;$(IncludePath)</IncludePath>
@@ -99,6 +100,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <AdditionalIncludeDirectories>C:\tbb43_20150611oss\build\vs2010\intel64\Debug;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -127,6 +129,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
